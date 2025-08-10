@@ -1,5 +1,10 @@
-use std::sync::atomic::{AtomicUsize, Ordering};
-use std::{sync::Barrier, thread};
+use std::{
+    sync::{
+        atomic::{AtomicUsize, Ordering},
+        Arc, Barrier,
+    },
+    thread,
+};
 
 #[test]
 fn simple() {
@@ -152,4 +157,22 @@ fn stress() {
     let mut sorted = vec.into_iter().collect::<Vec<_>>();
     sorted.sort();
     assert_eq!(sorted, (0..4000).collect::<Vec<_>>());
+}
+
+#[test]
+fn with_capacity() {
+    let vec = Arc::new(boxcar::Vec::with_capacity(8_000_000));
+
+    std::thread::scope(|s| {
+        for _ in 0..8 {
+            let vec = Arc::clone(&vec);
+            s.spawn(move || {
+                for i in 0..1_000_000 {
+                    vec.push(i);
+                }
+            });
+        }
+    });
+
+    assert_eq!(vec.count(), 8_000_000);
 }
