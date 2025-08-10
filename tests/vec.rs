@@ -176,3 +176,20 @@ fn with_capacity() {
 
     assert_eq!(vec.count(), 8_000_000);
 }
+
+#[test]
+fn bazinga() {
+    let mut vecs: Vec<_> = (0..8).map(|_| Vec::with_capacity(8_000_000)).collect();
+
+    std::thread::scope(|s| {
+        for vec in vecs.iter_mut() {
+            s.spawn(|| {
+                for i in 0..1_000_000 {
+                    vec.push(i);
+                }
+            });
+        }
+    });
+
+    assert_eq!(vecs.iter().map(Vec::len).sum::<usize>(), 8_000_000);
+}
