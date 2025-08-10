@@ -198,9 +198,7 @@ impl<T> Vec<T> {
             //
             // 2. Any thread trying to `get` this entry will see `!active`
             // and will not try to access it.
-            entry
-                .slot
-                .with_mut(|slot| slot.write(MaybeUninit::new(value)));
+            entry.slot.with_mut(|slot| (*slot).write(value));
 
             // Let other threads know that this entry is active.
             //
